@@ -1,19 +1,7 @@
 from django.db import models
+from users.models import Utilisateur
 from django.contrib.auth.models import AbstractUser
-
-# Classe utilisateur custom pour gérer étudiants et propriétaires
-class Utilisateur(AbstractUser):
-    ROLES = (
-        ('etudiant', 'Étudiant'),
-        ('proprietaire', 'Propriétaire'),
-    )
-    role = models.CharField(max_length=20, choices=ROLES)
-    telephone = models.CharField(max_length=20)
-    universite = models.CharField(max_length=100, blank=True, null=True)  # si étudiant
-    ville = models.CharField(max_length=100)
-
-    def _str_(self):
-        return self.username
+from location_field.models.plain import PlainLocationField
 
 # Classe Université (facultatif mais pratique pour les filtres)
 class Universite(models.Model):
@@ -37,6 +25,8 @@ class Chambre(models.Model):
     douche_interne = models.BooleanField(default=False)
     universite_proche = models.ForeignKey(Universite, on_delete=models.SET_NULL, null=True, blank=True)
     date_publication = models.DateTimeField(auto_now_add=True)
+
+    localisation = PlainLocationField(based_fields=['ville'], zoom=7, blank=True, null=True)
 
     def _str_(self):
         return self.titre

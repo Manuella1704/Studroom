@@ -37,10 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+
     'rest_framework',
     'rooms',
+    'users',
+    'location_field.apps.DefaultConfig',
 ]
+
+AUTH_USER_MODEL = 'users.Utilisateur'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -77,8 +81,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'studroom_db',        # le nom de ta base créée dans phpMyAdmin
+        'USER': 'root',
+        'PASSWORD': '77Elis@47',      # le mot de passe que tu as défini tout à l’heure
+        'HOST': 'localhost',
+        'PORT': '3306',
     }
 }
 

@@ -1,0 +1,18 @@
+# Environnement virtuel
+env/
+
+# Base de données SQLite
+db.sqlite3
+
+# Fichiers Python compilés
+__pycache__/
+*.py[cod]
+
+# Fichiers d’environnement
+.env
+
+# Logs
+*.log
+
+# VS Code
+.vscode/

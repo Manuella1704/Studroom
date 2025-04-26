@@ -1,11 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
+
 # Classe utilisateur custom pour gérer étudiants et propriétaires
 class Utilisateur(AbstractUser):
     ROLES = (
-        ('etudiant', 'Étudiant'),
-        ('proprietaire', 'Propriétaire'),
+        ("etudiant", "Étudiant"),
+        ("proprietaire", "Propriétaire"),
     )
     role = models.CharField(max_length=20, choices=ROLES)
     telephone = models.CharField(max_length=20)
@@ -13,15 +14,11 @@ class Utilisateur(AbstractUser):
     ville = models.CharField(max_length=100)
 
     groups = models.ManyToManyField(
-        'auth.Group',
-        related_name='utilisateurs_groups',
-        blank=True
+        "auth.Group", related_name="utilisateurs_groups", blank=True
     )
 
     user_permissions = models.ManyToManyField(
-        'auth.Permission',
-        related_name='utilisateurs_permissions',
-        blank=True
+        "auth.Permission", related_name="utilisateurs_permissions", blank=True
     )
 
     def _str_(self):

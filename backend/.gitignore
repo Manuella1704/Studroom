@@ -3,3 +3,5 @@
 __pycache__
 .env
 .env.example
+*/__pycache__/
+*/migrations/__pycache__/

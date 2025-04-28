@@ -8,7 +8,7 @@ class Universite(models.Model):
     nom = models.CharField(max_length=100)
     ville = models.CharField(max_length=100)
 
-    def _str_(self):
+    def __str__(self):
         return self.nom
 
 # Classe Chambre
@@ -28,7 +28,7 @@ class Chambre(models.Model):
 
     localisation = PlainLocationField(based_fields=['ville'], zoom=7, blank=True, null=True)
 
-    def _str_(self):
+    def __str__(self):
         return self.titre
 
 # Classe Annonce (facultatif si tu veux séparer logique de chambre et publication)
@@ -46,7 +46,7 @@ class Favori(models.Model):
     chambre = models.ForeignKey(Chambre, on_delete=models.CASCADE)
     date_ajout = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.utilisateur.username} - {self.chambre.titre}"
 
 # Classe Signalement
@@ -56,5 +56,13 @@ class Signalement(models.Model):
     motif = models.TextField()
     date_signalement = models.DateTimeField(auto_now_add=True)
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.utilisateur.username} signale {self.chambre.titre}"
+
+#pour l'image
+class RoomImage(models.Model):
+    chambre = models.ForeignKey('Chambre', on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='chambre_images/')
+
+    def __str__(self):
+        return f"Image for {self.chambre.titre}"

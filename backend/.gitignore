@@ -1,0 +1,8 @@
+.venv
+*.pyc
+__pycache__
+.env
+.env.example
+*/__pycache__/
+*/migrations/__pycache__/
+media

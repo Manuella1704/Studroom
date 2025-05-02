@@ -83,11 +83,9 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'studroom_db',        # le nom de ta base créée dans phpMyAdmin
-        'USER': 'root',
-        'PASSWORD': '77Elis@47',      # le mot de passe que tu as défini tout à l’heure
-        'HOST': 'localhost',
-        'PORT': '3306',
+        "OPTIONS": {
+            "read_default_file": os.path.join(BASE_DIR, 'my.cnf')
+        }
     }
 }
 

@@ -1,0 +1,6 @@
+[client]
+database = db_name
+host     = localhost
+user     = user
+password = pwd
+port     = 3306

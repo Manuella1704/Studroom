@@ -1,103 +1,236 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useEffect, useState } from 'react'
+import RoomCard from './components/ui/RoomCard'
+import Image from 'next/image'
+import Link from 'next/link'
+import { Search } from 'lucide-react'
+import { HeartHandshake } from 'lucide-react'
+import { Package } from 'lucide-react' 
+import { useRouter } from 'next/navigation'
+
+export default function HomePage() {
+  const [rooms, setRooms] = useState([])
+  const [villes, setVilles] = useState([])
+  const [search, setSearch] = useState ('')
+  const [ville, setVille] = useState('')
+  const [favoris, setFavoris] = useState([]);
+  const router = useRouter();
+
+  async function fetchFavoris() {
+    const token = localStorage.getItem('access');
+    if (!token) return;
+  
+    try {
+      const res = await fetch('http://localhost:8000/favoris/', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      if (!res.ok) {
+        const error = await res.json();
+        console.error("Erreur Favoris:", error.detail);
+        return;
+      }
+  
+      const data = await res.json();
+  
+      if (!Array.isArray(data)) {
+        console.error("Données inattendues:", data);
+        return;
+      }
+  
+      const ids = data.map(f => f.chambre.id);
+      setFavoris(ids);
+    } catch (error) {
+      console.error("Erreur chargement favoris:", error);
+    }
+  }
+
+  useEffect(() => {
+    async function fetchRooms() {
+      try {
+        const res = await fetch('http://localhost:8000/chambres/')
+        const data = await res.json()
+        setRooms(data)
+
+        const uniqueVilles = [...new Set(data.map(r => r.ville))]
+        setVilles(uniqueVilles.slice(0, 4)) // max 4 villes populaires
+      } catch (error) {
+        console.error('Erreur chargement chambres', error)
+      }
+    }
+
+    fetchRooms();
+    fetchFavoris();
+  }, [])
+
+  const toggleFavorite = async (chambreId) => {
+    const token = localStorage.getItem("access");
+    if (!token) {
+      alert("Veuillez vous connecter pour ajouter une chambre en favori.");
+      return;
+    }
+  
+    const isAlreadyFavorite = favoris.includes(chambreId);
+  
+    try {
+      const res = await fetch("http://localhost:8000/favoris/", {
+        method: isAlreadyFavorite ? "DELETE" : "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ chambre: chambreId }),
+      });
+  
+      if (res.ok) {
+        setFavoris((prev) =>
+          isAlreadyFavorite
+            ? prev.filter((id) => id !== chambreId)
+            : [...prev, chambreId]
+        );
+      } else {
+        const err = await res.json();
+        alert(err?.detail || "Erreur lors du traitement.");
+      }
+    } catch (error) {
+      console.error("Erreur favoris :", error);
+    }
+  };
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <main className="w-full bg-[#F3F4F6]">
+      {/* Bloc Héro */}
+      <section className="w-full bg-[#F3F4F6] pt-32 pb-20">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col-reverse lg:flex-row items-center justify-between gap-20">
+          
+          {/* Texte à gauche */}
+          <div className="lg:w-1/2 w-full">
+            <h1 className="text-4xl sm:text-5xl font-bold leading-tight mb-6 text-[#2C4A8A]">
+              Un clic, un toit. <br /> Une année universitaire réussie.
+            </h1>
+            <p className="mb-6 text-[#374151] text-base leading-relaxed">
+              Découvrez des logements vérifiés par nos agents certifiés autour des universités au Cameroun.
+            </p>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {/* Champs de recherche */}
+            <div className="flex flex-col sm:flex-row gap-4 mb-4">
+              <input
+                type="text"
+                placeholder="Ville (ex: Buea)"
+                className="px-4 py-2 rounded-md border border-gray-300 text-sm w-full sm:w-1/2"
+              />
+              <input
+                type="text"
+                placeholder="Quartier, université..."
+                className="px-4 py-2 rounded-md border border-gray-300 text-sm w-full sm:w-1/2"
+              />
+              <button className="bg-[#2C4A8A] text-white px-6 py-2 rounded-md text-sm hover:bg-[#1e3a6a] transition">
+                Rechercher
+              </button>
+            </div>
+
+            <p className="text-[#34D399] text-sm font-medium underline cursor-pointer">
+              Trouver une chambre avec l’assistant
+            </p>
+          </div>
+
+          {/* Image nuage à droite */}
+          <div className="lg:w-1/2 w-full max-w-xl mx-auto">
+            <svg viewBox="0 0 500 500" className="w-full h-auto scale-[1.35]">
+              <defs>
+                <clipPath id="cloud-clip" clipPathUnits="objectBoundingBox">
+                  <path d="M0.6,0.1 C0.8,0.1,0.9,0.2,1,0.4 C1,0.5,0.95,0.65,0.8,0.7 C0.85,0.85,0.7,1,0.5,0.95 C0.35,1,0.15,0.9,0.1,0.75 C0,0.6,0.1,0.4,0.3,0.35 C0.2,0.2,0.3,0.1,0.6,0.1 Z" />
+                </clipPath>
+              </defs>
+              <image
+                href="/student-room.jpg"
+                width="100%"
+                height="100%"
+                preserveAspectRatio="xMidYMid slice"
+                clipPath="url(#cloud-clip)"
+              />
+            </svg>
+          </div>
+
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+      </section>
+
+      {/* Villes populaires */}
+      <section className="py-12 px-6 lg:px-20 text-center">
+        <h2 className="text-2xl font-semibold text-[#2C4A8A] mb-8">Villes populaires</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {villes.map((ville, index) => (
+            <div key={index} className="bg-white shadow rounded p-4">
+              <p className="font-semibold text-[#2C4A8A]">{ville}</p>
+              <p className="text-sm text-gray-500">{rooms.filter(r => r.ville === ville).length} logements</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Annonces populaires */}
+      <section className="py-12 px-6 lg:px-20 bg-[#F3F4F6]">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-semibold text-[#2C4A8A]">Annonces populaires</h2>
+          <Link href="/rooms" className="text-[#2C4A8A] text-sm hover:underline">Voir tout →</Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {rooms.slice(0, 3).map(room => (
+            <RoomCard
+              key={room.id}
+              room={room}
+              isFavorite={favoris.includes(room.id)}
+              toggleFavorite={toggleFavorite}
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Comment ça marche */}
+      <section className="py-16 bg-[#F3F4F6]">
+        <h2 className="text-center text-2xl font-semibold text-[#2C4A8A] mb-12">Comment ça marche</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-6xl mx-auto px-6 text-center">
+          <div className="flex flex-col items-center gap-4">
+            <Search size={48} className="text-[#2C4A8A]" />
+            <h3 className="text-lg font-semibold text-[#374151]">Recherchez</h3>
+            <p className="text-sm text-gray-600">Parcourez notre catalogue de chambres vérifiées autour de votre université.</p>
+          </div>
+          <div className="flex flex-col items-center gap-4">
+            <HeartHandshake size={48} className="text-[#2C4A8A]" />
+            <h3 className="text-lg font-semibold text-[#374151]">Favoris</h3>
+            <p className="text-sm text-gray-600">Choisissez votre logement idéal et réservez en quelques clics.</p>
+          </div>
+          <div className="flex flex-col items-center gap-4">
+            <Package size={48} className="text-[#2C4A8A]" />
+            <h3 className="text-lg font-semibold text-[#374151]">Emménagez</h3>
+            <p className="text-sm text-gray-600">Installez-vous sereinement dans votre nouveau logement étudiant certifié.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Engagement */}
+      <section className="bg-[#EFF6FF] py-16 px-6 lg:px-20">
+        <h2 className="text-2xl font-semibold text-[#2C4A8A] mb-6">Notre engagement pour votre sécurité</h2>
+        <p className="text-gray-600 mb-6">Chez Roomia, nous vérifions chaque logement avec des agents certifiés pour garantir la qualité et la sécurité des chambres proposées.</p>
+        <ul className="list-disc list-inside text-sm text-gray-700 space-y-2">
+          <li>Chambres inspectées par nos agents</li>
+          <li>Photos vérifiées et récentes</li>
+          <li>Support 24/7 pour les étudiants</li>
+        </ul>
+      </section>
+
+      {/* Call to action */}
+      <section className="bg-[#2C4A8A] text-white text-center py-16">
+        <h2 className="text-2xl font-bold mb-4">Prêt à trouver votre chambre étudiante idéale ?</h2>
+        <p className="mb-6">Rejoignez Roomia et trouvez un logement sécurisé pour votre année universitaire</p>
+        <div className="flex justify-center gap-4">
+          <Link href="/register" className="bg-white text-[#2C4A8A] px-6 py-2 rounded hover:bg-gray-100">S'inscrire gratuitement</Link>
+          <Link href="/rooms" className="bg-[#34D399] text-white px-6 py-2 rounded hover:bg-[#2bb183]">Parler à l’assistant</Link>
+        </div>
+      </section>
+    </main>
+  )
 }

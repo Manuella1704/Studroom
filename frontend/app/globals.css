@@ -5,12 +5,12 @@
   --foreground: #171717;
 }
 
-@theme inline {
+/*@theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
+}*/
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -22,5 +22,77 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
+}
+
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-right {
+  0% {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 1s ease-out;
+}
+
+.animate-slide-in-right {
+  animation: slide-in-right 1s ease-out;
+}
+main{
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+@keyframes ping-siri {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  75%, 100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+@keyframes pulse-siri {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.4;
+  }
+}
+@keyframes wave-siri {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(1.3);
+  }
+}
+.animate-ping-siri {
+  animation: ping-siri 1.6s infinite;
+}
+.animate-pulse-siri {
+  animation: pulse-siri 1.4s infinite;
+}
+.animate-wave-siri {
+  animation: wave-siri 1s ease-in-out infinite;
 }

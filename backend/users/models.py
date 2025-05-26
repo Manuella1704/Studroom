@@ -5,9 +5,10 @@ from django.contrib.auth.models import AbstractUser
 class Utilisateur(AbstractUser):
     ROLES = (
         ('etudiant', 'Étudiant'),
-        ('proprietaire', 'Propriétaire'),
+        ('annonceur', 'Annonceur'),
+        ('administrateur', 'Adminstrateur'),
     )
-    role = models.CharField(max_length=20, choices=ROLES)
+    role = models.CharField(max_length=20, choices=ROLES, default= 'etudiant')
     telephone = models.CharField(max_length=20)
     universite = models.CharField(max_length=100, blank=True, null=True)  # si étudiant
     ville = models.CharField(max_length=100)
@@ -26,3 +27,12 @@ class Utilisateur(AbstractUser):
 
     def _str_(self):
         return self.username
+    
+    def is_etudiant(self):
+        return self.role == 'etudiant'
+
+    def is_annonceur(self):
+        return self.role == 'annonceur'
+
+    def is_admin(self):
+        return self.role == 'admin'

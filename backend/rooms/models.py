@@ -3,7 +3,6 @@ from users.models import Utilisateur
 from django.contrib.auth.models import AbstractUser
 from location_field.models.plain import PlainLocationField
 
-# Classe Université (facultatif mais pratique pour les filtres)
 class Universite(models.Model):
     nom = models.CharField(max_length=100)
     ville = models.CharField(max_length=100)
@@ -27,14 +26,21 @@ class Chambre(models.Model):
     date_publication = models.DateTimeField(auto_now_add=True)
 
     localisation = PlainLocationField(based_fields=['ville'], zoom=7, blank=True, null=True)
+    nombre_vues = models.IntegerField(default=0)  # ← ajoute cette ligne
 
     def __str__(self):
         return self.titre
 
 # Classe Annonce (facultatif si tu veux séparer logique de chambre et publication)
+STATUTS = (
+    ('en_attente', 'En attente'),
+    ('active', 'Active'),
+    ('refusee', 'Refusée'),
+)
+
 class Annonce(models.Model):
     chambre = models.OneToOneField(Chambre, on_delete=models.CASCADE)
-    statut = models.CharField(max_length=20, default='active')  # ou 'en attente', 'refusée'
+    statut = models.CharField(max_length=20, choices=STATUTS, default='en_attente')
     nombre_vues = models.IntegerField(default=0)
 
     def _str_(self):
@@ -42,27 +48,27 @@ class Annonce(models.Model):
 
 # Classe Favori
 class Favori(models.Model):
-    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
-    chambre = models.ForeignKey(Chambre, on_delete=models.CASCADE)
+    utilisateur = models.ForeignKey('users.Utilisateur', on_delete=models.CASCADE)
+    chambre = models.ForeignKey('Chambre', on_delete=models.CASCADE)
     date_ajout = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.utilisateur.username} - {self.chambre.titre}"
+        return f"{self.utilisateur.username} -> {self.chambre.titre}"
 
 # Classe Signalement
 class Signalement(models.Model):
-    utilisateur = models.ForeignKey(Utilisateur, on_delete=models.CASCADE)
-    chambre = models.ForeignKey(Chambre, on_delete=models.CASCADE)
+    utilisateur = models.ForeignKey('users.Utilisateur', on_delete=models.CASCADE)
+    chambre = models.ForeignKey('Chambre', on_delete=models.CASCADE)
     motif = models.TextField()
     date_signalement = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+    def _str_(self):
         return f"{self.utilisateur.username} signale {self.chambre.titre}"
 
 #pour l'image
 class RoomImage(models.Model):
-    chambre = models.ForeignKey('Chambre', on_delete=models.CASCADE, related_name='images')
-    image = models.ImageField(upload_to='chambre_images/')
+    chambre = models.ForeignKey(Chambre, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='chambres/')
 
     def __str__(self):
         return f"Image for {self.chambre.titre}"

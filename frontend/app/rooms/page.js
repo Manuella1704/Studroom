@@ -1,94 +1,104 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import RoomCard from '../components/ui/RoomCard'
-import { Wifi, Bed } from 'lucide-react'
+import { useEffect, useState } from "react";
+import RoomCard from "../components/ui/RoomCard";
+import { Wifi, Bed } from "lucide-react";
+import { getAccesToken } from "app/utils/refresh_token";
 
 export default function RoomsPage() {
-  const [rooms, setRooms] = useState([])
-  const [ville, setVille] = useState('')
-  const [quartier, setQuartier] = useState('')
-  const [wifi, setWifi] = useState(false)
-  const [meuble, setMeuble] = useState(false)
-  const [prixMax, setPrixMax] = useState(0)
-  const [prixMaxLimite, setPrixMaxLimite] = useState(10000)
-  const [villes, setVilles] = useState([])
-  const [quartiers, setQuartiers] = useState([])
-  const [favoris, setFavoris]= useState([]);
+  const [rooms, setRooms] = useState([]);
+  const [ville, setVille] = useState("");
+  const [quartier, setQuartier] = useState("");
+  const [wifi, setWifi] = useState(false);
+  const [meuble, setMeuble] = useState(false);
+  const [prixMax, setPrixMax] = useState(0);
+  const [prixMaxLimite, setPrixMaxLimite] = useState(10000);
+  const [villes, setVilles] = useState([]);
+  const [quartiers, setQuartiers] = useState([]);
+  const [favoris, setFavoris] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:8000/chambres/')
-      .then(res => res.json())
-      .then(data => {
-        const uniqueVilles = [...new Set(data.map(r => r.ville))];
-        const uniqueQuartiers = [...new Set(data.map(r => r.quartier))];
-        const maxPrix = Math.max(...data.map(r => r.prix))
+    fetch("http://localhost:8000/chambres/")
+      .then((res) => res.json())
+      .then((data) => {
+        const uniqueVilles = [...new Set(data.map((r) => r.ville))];
+        const uniqueQuartiers = [...new Set(data.map((r) => r.quartier))];
+        const maxPrix = Math.max(...data.map((r) => r.prix));
         const fetchFavoris = async () => {
-          const token = localStorage.getItem('access');
+          const token = await getAccesToken();
           if (!token) return;
-        
+
           try {
-            const res = await fetch('http://localhost:8000/favoris/', {
+            const res = await fetch("http://localhost:8000/favoris/", {
               headers: {
                 Authorization: `Bearer ${token}`,
               },
             });
             const data = await res.json();
-            const ids = data.map(f => f.chambre.id);
+            if (!Array.isArray(data)) {
+              console.error("Données inattendues:", data);
+              return;
+            }
+            const ids = data.map((f) => f.chambre.id);
             setFavoris(ids);
           } catch (err) {
-            console.error('Erreur fetch favoris', err);
+            console.error("Erreur fetch favoris", err);
           }
         };
-  
+
         setVilles(uniqueVilles);
         setQuartiers(uniqueQuartiers);
-        setPrixMaxLimite(maxPrix)
-        setPrixMax(maxPrix) // valeur initiale
+        setPrixMaxLimite(maxPrix);
+        setPrixMax(maxPrix); // valeur initiale
         setRooms(data);
-        fetchFavoris(); 
+        fetchFavoris();
       })
-      .catch(err => console.error("Erreur lors du chargement", err));
+      .catch((err) => console.error("Erreur lors du chargement", err));
   }, []);
 
   const handleFilter = async () => {
-    const params = new URLSearchParams()
-    if (ville) params.append('ville', ville)
-    if (quartier) params.append('quartier', quartier)
-    if (wifi) params.append('wifi', 'true')
-    if (meuble) params.append('meuble', 'true')
-    params.append('prix_max', prixMax)
+    const params = new URLSearchParams();
+    if (ville) params.append("ville", ville);
+    if (quartier) params.append("quartier", quartier);
+    if (wifi) params.append("wifi", "true");
+    if (meuble) params.append("meuble", "true");
+    params.append("prix_max", prixMax);
 
-    const res = await fetch(`http://localhost:8000/chambres/?${params.toString()}`)
-    const data = await res.json()
-    setRooms(data)
-  }
+    const res = await fetch(
+      `http://localhost:8000/chambres/?${params.toString()}`
+    );
+    const data = await res.json();
+    setRooms(data);
+  };
 
   const toggleFavorite = async (chambreId) => {
-    const token = localStorage.getItem('access');
+    const token = await getAccesToken();
     if (!token) {
-      alert('Vous devez être connecté pour ajouter en favoris.');
+      alert("Vous devez être connecté pour ajouter en favoris.");
       return;
     }
-  
-  const isFav = favoris.includes(chambreId);
+
+    const isFav = favoris.includes(chambreId);
     try {
-      const res = await fetch(`http://localhost:8000/favoris/${isFav ? chambreId + '/' : ''}`, {
-        method: isFav ? 'DELETE' : 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: isFav ? null : JSON.stringify({ chambre: chambreId }),
-      });
-  
+      const res = await fetch(
+        `http://localhost:8000/favoris/${isFav ? chambreId + "/" : ""}`,
+        {
+          method: isFav ? "DELETE" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: isFav ? null : JSON.stringify({ chambre: chambreId }),
+        }
+      );
+
       if (res.ok) {
-        setFavoris(prev =>
-          isFav ? prev.filter(id => id !== chambreId) : [...prev, chambreId]
+        setFavoris((prev) =>
+          isFav ? prev.filter((id) => id !== chambreId) : [...prev, chambreId]
         );
       }
     } catch (error) {
-      console.error('Erreur toggle favoris', error);
+      console.error("Erreur toggle favoris", error);
     }
   };
 
@@ -96,8 +106,13 @@ export default function RoomsPage() {
     <main className="w-full bg-gray-50 min-h-screen">
       {/* Bloc d’intro + filtres (juste sous le header) */}
       <section className="w-full px-6 lg:px-24 pt-20 pb-10 bg-white shadow-sm">
-        <h1 className="text-3xl font-bold text-center mb-2 text-[#2C4A8A]">Explorez nos chambres étudiantes disponibles au Cameroun</h1>
-        <p className="text-center text-[#2C4A8A] mb-6">Des logements vérifiés et sécurisés à proximité des campus universitaires</p>
+        <h1 className="text-3xl font-bold text-center mb-2 text-[#2C4A8A]">
+          Explorez nos chambres étudiantes disponibles au Cameroun
+        </h1>
+        <p className="text-center text-[#2C4A8A] mb-6">
+          Des logements vérifiés et sécurisés à proximité des campus
+          universitaires
+        </p>
 
         <div className="grid grid-cols-6 gap-4 items-end w-full">
           <div className="w-full">
@@ -108,35 +123,61 @@ export default function RoomsPage() {
               className="px-3 py-2 rounded-md border border-gray-300 w-full"
             >
               <option value="">Toutes les villes</option>
-              {villes.map(v => <option key={v} value={v}>{v}</option>)}
+              {villes.map((v) => (
+                <option key={v} value={v}>
+                  {v}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="w-full">
-            <label className="text-base text-[#2C4A8A] mb-2 block">Quartier</label>
+            <label className="text-base text-[#2C4A8A] mb-2 block">
+              Quartier
+            </label>
             <select
               value={quartier}
               onChange={(e) => setQuartier(e.target.value)}
               className="px-3 py-2 rounded-md border border-gray-300 w-full"
             >
               <option value="">Tous les quartiers</option>
-              {quartiers.map(q => <option key={q} value={q}>{q}</option>)}
+              {quartiers.map((q) => (
+                <option key={q} value={q}>
+                  {q}
+                </option>
+              ))}
             </select>
           </div>
 
           <div className="flex items-center gap-6 flex-wrap">
             {/* Checkbox WiFi */}
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="wifi" checked={wifi} onChange={() => setWifi(!wifi)} />
-              <label htmlFor="wifi" className="text-base text-[#2C4A8A] flex items-center gap-1">
+              <input
+                type="checkbox"
+                id="wifi"
+                checked={wifi}
+                onChange={() => setWifi(!wifi)}
+              />
+              <label
+                htmlFor="wifi"
+                className="text-base text-[#2C4A8A] flex items-center gap-1"
+              >
                 <Wifi size={16} /> WiFi
               </label>
             </div>
 
             {/* Checkbox Meublé */}
             <div className="flex items-center gap-2">
-              <input type="checkbox" id="meuble" checked={meuble} onChange={() => setMeuble(!meuble)} />
-              <label htmlFor="meuble" className="text-base text-[#2C4A8A] flex items-center gap-1">
+              <input
+                type="checkbox"
+                id="meuble"
+                checked={meuble}
+                onChange={() => setMeuble(!meuble)}
+              />
+              <label
+                htmlFor="meuble"
+                className="text-base text-[#2C4A8A] flex items-center gap-1"
+              >
                 <Bed size={16} /> Meublé
               </label>
             </div>
@@ -144,7 +185,9 @@ export default function RoomsPage() {
 
           <div className="flex items-end gap-20">
             <div className="flex flex-col">
-              <label className="text-base text-[#2C4A8A] mb-1">Prix Max: {prixMax} FCFA</label>
+              <label className="text-base text-[#2C4A8A] mb-1">
+                Prix Max: {prixMax} FCFA
+              </label>
               <input
                 type="range"
                 min={10000}
@@ -167,9 +210,11 @@ export default function RoomsPage() {
 
       {/* Résultats */}
       <section className="w-full px-6 lg:px-24 py-8">
-        <p className="text-lg font-semibold text-gray-800 mb-4">{rooms.length} chambres trouvées</p>
+        <p className="text-lg font-semibold text-gray-800 mb-4">
+          {rooms.length} chambres trouvées
+        </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rooms.map(room => (
+          {rooms.map((room) => (
             <RoomCard
               key={room.id}
               room={room}
@@ -180,5 +225,5 @@ export default function RoomsPage() {
         </div>
       </section>
     </main>
-  )
+  );
 }

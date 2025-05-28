@@ -8,6 +8,7 @@ import { Search } from "lucide-react";
 import { HeartHandshake } from "lucide-react";
 import { Package } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { getAccesToken } from "./utils/refresh_token";
 
 export default function HomePage() {
   const [rooms, setRooms] = useState([]);
@@ -18,8 +19,10 @@ export default function HomePage() {
   const router = useRouter();
 
   async function fetchFavoris() {
-    const token = localStorage.getItem("access");
+    const token = await getAccesToken();
     if (!token) return;
+
+    console.log("Token:", token);
 
     try {
       const res = await fetch("http://localhost:8000/favoris/", {
@@ -38,6 +41,11 @@ export default function HomePage() {
 
       if (!Array.isArray(data)) {
         console.error("Données inattendues:", data);
+        return;
+      }
+
+      if (data.length === 0) {
+        console.log("Aucun favori trouve");
         return;
       }
 
@@ -67,16 +75,16 @@ export default function HomePage() {
   }, []);
 
   const toggleFavorite = async (chambreId) => {
-    const token = localStorage.getItem("access");
+    const token = await getAccesToken();
     if (!token) {
       alert("Veuillez vous connecter pour ajouter une chambre en favori.");
       return;
     }
 
     const isAlreadyFavorite = favoris.includes(chambreId);
-
+    const url = "http://localhost:8000/favoris/";
     try {
-      const res = await fetch("http://localhost:8000/favoris/", {
+      const res = await fetch(url, {
         method: isAlreadyFavorite ? "DELETE" : "POST",
         headers: {
           "Content-Type": "application/json",

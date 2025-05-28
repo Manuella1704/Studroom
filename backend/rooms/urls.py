@@ -15,7 +15,11 @@ router.register(r'signalements', SignalementViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path("chambres/", ChambreListCreateView.as_view(), name="chambre-list"),
-    path('chatbot/recommandations/', views.ChatbotRecommendationView.as_view(), name='chatbot_recommendation'),
-    path('dashboard-annonceur-stats/', DashboardAnnonceurStats.as_view(), name='dashboard-annonceur-stats'),
-    path('rooms/', RoomListAPIView.as_view(), name= 'rooms-list'),
+    path('chatbot/recommandations/', views.ChatbotRecommendationView.as_view(),
+         name='chatbot_recommendation'),
+    path('dashboard-annonceur-stats/', DashboardAnnonceurStats.as_view(),
+         name='dashboard-annonceur-stats'),
+    path('rooms/', RoomListAPIView.as_view(), name='rooms-list'),
+    # path('favoris/<int:chambre_id>/',
+    #      FavoriDeleteView.as_view(), name='favoris-delete'),
 ]

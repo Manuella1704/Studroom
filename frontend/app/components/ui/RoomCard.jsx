@@ -7,6 +7,8 @@ import { Heart, HeartOff, Wifi, Bed, Droplet } from 'lucide-react'
 export default function RoomCard({ room, isFavorite, toggleFavorite }) {
   const prixFormat = new Intl.NumberFormat('fr-FR').format(room.prix)
 
+  
+
   return (
     <div className="relative flex flex-col bg-white border border-gray-200 rounded-lg shadow-md hover:shadow-xl transition-all overflow-hidden w-full h-full">
       {/* Badge */}

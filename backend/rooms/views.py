@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics 
+from rest_framework import generics
 from rest_framework.generics import ListAPIView
 from rest_framework import viewsets, serializers
 from .models import Chambre, RoomImage, Universite, Annonce, Favori, Signalement
@@ -15,6 +15,7 @@ from rest_framework import status
 from django.db.models import Q
 from rest_framework.permissions import AllowAny
 
+
 class DashboardAnnonceurStats(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -22,14 +23,18 @@ class DashboardAnnonceurStats(APIView):
         annonceur_id = request.user.id
         user = request.user
         nb_chambres = Chambre.objects.filter(proprietaire=user).count()
-        nb_annonces = Annonce.objects.filter(chambre__proprietaire=user, statut='active').count()
-        nb_signalements = Signalement.objects.filter(chambre__proprietaire=user).count()
+        nb_annonces = Annonce.objects.filter(
+            chambre__proprietaire=user, statut='active').count()
+        nb_signalements = Signalement.objects.filter(
+            chambre__proprietaire=user).count()
 
         return Response({
             "nb_chambres": nb_chambres,
             "nb_annonces": nb_annonces,
             "nb_signalements": nb_signalements
         })
+
+
 class ChambreViewSet(viewsets.ModelViewSet):
     queryset = Chambre.objects.all()
     serializer_class = ChambreSerializer
@@ -63,15 +68,18 @@ class ChambreViewSet(viewsets.ModelViewSet):
             return [IsAuthenticated(), IsAnnonceur(), IsOwnerOrReadOnly()]
         return [AllowAny()]
 
+
 class ChambreListCreateView(generics.ListCreateAPIView):
     serializer_class = ChambreSerializer
 
     def get_queryset(self):
         return Chambre.objects.filter(valide=True, images__isnull=False).distinct()
 
+
 class RoomImageViewSet(viewsets.ModelViewSet):
     queryset = RoomImage.objects.all()
     serializer_class = RoomImageSerializer
+
 
 class UniversiteViewSet(viewsets.ModelViewSet):
     queryset = Universite.objects.all()
@@ -94,18 +102,22 @@ class AnnonceViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         chambre = serializer.validated_data['chambre']
         if chambre.proprietaire != self.request.user:
-            raise serializers.ValidationError("Vous ne pouvez créer une annonce que pour vos propres chambres.")
+            raise serializers.ValidationError(
+                "Vous ne pouvez créer une annonce que pour vos propres chambres.")
         serializer.save()
-    
+
     def perform_update(self, serializer):
         if self.get_object().chambre.proprietaire != self.request.user and self.request.user.role != 'admin':
-            raise serializers.ValidationError("Vous ne pouvez modifier que vos propres annonces.")
+            raise serializers.ValidationError(
+                "Vous ne pouvez modifier que vos propres annonces.")
         serializer.save()
 
     def perform_destroy(self, instance):
         if instance.chambre.proprietaire != self.request.user and self.request.user.role != 'admin':
-            raise serializers.ValidationError("Suppression refusée : vous n’êtes pas le propriétaire.")
+            raise serializers.ValidationError(
+                "Suppression refusée : vous n’êtes pas le propriétaire.")
         instance.delete()
+
 
 class FavoriViewSet(viewsets.ModelViewSet):
     queryset = Favori.objects.all()
@@ -120,10 +132,18 @@ class FavoriViewSet(viewsets.ModelViewSet):
         )
 
     def perform_create(self, serializer):
-        chambre = self.request.data.get('chambre')
-        if Favori.objects.filter(utilisateur=self.request.user, chambre=chambre).exists():
-            raise serializers.ValidationError("Cette chambre est déjà dans vos favoris.")
-        serializer.save(utilisateur=self.request.user)
+        chambre_id = self.request.data.get('chambre')
+        if Favori.objects.filter(utilisateur=self.request.user, chambre__id=chambre_id).exists():
+            raise serializers.ValidationError(
+                "Cette chambre est déjà dans vos favoris.")
+        serializer.save(utilisateur=self.request.user, chambre_id=chambre_id)
+
+    def delete(self, request, *args, **kwargs):
+        chambre_id = self.request.data.get('chambre')
+        Favori.objects.filter(utilisateur=request.user,
+                              chambre__id=chambre_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 class SignalementViewSet(viewsets.ModelViewSet):
     queryset = Signalement.objects.all()
@@ -137,8 +157,10 @@ class SignalementViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         chambre = self.request.data.get('chambre')
         if Signalement.objects.filter(utilisateur=self.request.user, chambre=chambre).exists():
-            raise serializers.ValidationError("Vous avez déjà signalé cette chambre.")
+            raise serializers.ValidationError(
+                "Vous avez déjà signalé cette chambre.")
         serializer.save(utilisateur=self.request.user)
+
 
 class ChatbotRecommendationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -159,11 +181,13 @@ class ChatbotRecommendationView(APIView):
         if wifi is not None:
             chambres = chambres.filter(wifi_disponible=wifi)
         if universite:
-            chambres = chambres.filter(universite_proche_nom_icontains=universite)
+            chambres = chambres.filter(
+                universite_proche_nom_icontains=universite)
 
         serialized = ChambreSerializer(chambres, many=True)
         return Response(serialized.data, status=status.HTTP_200_OK)
-    
+
+
 class RoomListAPIView(ListAPIView):
     queryset = Chambre.objects.all()
     serializer_class = ChambreSerializer

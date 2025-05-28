@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: studroom-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - /app/__pycache__
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+    networks:
+      - studroom-network
+
+  frontend:
+    build: ./frontend
+    container_name: studroom-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
+    networks:
+      - studroom-network
+
+  db:
+    image: mysql:8.0
+    container_name: studroom-db
+    environment:
+      MYSQL_DATABASE: studroom
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./backend/my.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - "3306:3306"
+    networks:
+      - studroom-network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: studroom-phpmyadmin
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: user
+      PMA_PASSWORD: password
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - studroom-network
+
+networks:
+  studroom-network:
+    driver: bridge
+
+volumes:
+  mysql-data:

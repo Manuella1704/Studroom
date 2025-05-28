@@ -7,6 +7,9 @@ import { Heart, HeartOff, Wifi, Bed, Droplet } from 'lucide-react'
 export default function RoomCard({ room, isFavorite, toggleFavorite }) {
   const prixFormat = new Intl.NumberFormat('fr-FR').format(room.prix)
 
+  console.log(room);
+  
+
   
 
   return (
@@ -17,9 +20,9 @@ export default function RoomCard({ room, isFavorite, toggleFavorite }) {
       </span>
 
       {/* Image */}
-      {room.image ? (
+      {(room && room.images && room.images.length > 0) ? (
         <Image
-          src={room.image}
+          src={room.images[0].image}
           alt={`Image de ${room.titre}`}
           width={500}
           height={280}

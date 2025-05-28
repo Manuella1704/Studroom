@@ -35,7 +35,7 @@ def chat_ai(request):
         response = client.chat.completions.create(
             model=g4f.models.gemini_2_5_flash,
             messages=[
-                {"role": "system", "content": "Tu es un assistant utile qui aide les étudiants à trouver des chambres." + str_training_rooms + "Si on te demande des chambre et que tu ne trouve pas dans cette liste dis juste que tu ne trouve pas de chambre."},
+                {"role": "system", "content": "Tu es un assistant utile qui aide les étudiants à trouver des chambres. avec ces données : " + str_training_rooms + "Si on te demande des chambre et que tu ne trouve pas dans cette liste dis juste que tu ne trouve pas de chambre."},
                 {"role": "system", "content": "Le contexte de la conversation est le suivant : " + history},
                 {"role": "user", "content": question}
             ]

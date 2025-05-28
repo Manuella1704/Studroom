@@ -33,7 +33,7 @@ export default function Navbar() {
         <div className="flex gap-6 items-center text-sm font-medium text-[#374151]">
           <Link href="/">Accueil</Link>
           <Link href="/rooms">Chambres</Link>
-          <Link href="/favorite">Favoris</Link>
+          <Link href="/favorites">Favoris</Link>
           {isAuthenticated ? (
             <>
               <Link href="/dashboard">Dashboard</Link>

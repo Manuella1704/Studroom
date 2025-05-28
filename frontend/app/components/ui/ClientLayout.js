@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { usePathname } from "next/navigation";
 import Navbar from "./Navbar";
@@ -10,11 +10,11 @@ export default function ClientLayout({ children }) {
   const shouldHideUI = ["/login", "/register"].includes(pathname);
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       {!shouldHideUI && <Navbar />}
       {!shouldHideUI && <ChatBox />}
-      {children} {/* plus de <main> ici */}
-      {!shouldHideUI && <Footer />}
-    </>
+      <main className="flex-1">{children}</main>
+      {!shouldHideUI && <Footer className="fixed bottom-0 w-full" />}
+    </div>
   );
 }

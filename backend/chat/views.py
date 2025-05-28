@@ -21,6 +21,8 @@ def chat_ai(request):
         training_rooms.append({"role": "assistant", "content": chambre.ville})
         training_rooms.append({"role": "assistant", "content": chambre.quartier})
         training_rooms.append({"role": "assistant", "content": chambre.adresse_complete})
+        training_rooms.append({"role": "assistant", "content": chambre.universite_proche.nom})
+
 
     str_training_rooms = str(training_rooms)
 

@@ -1,7 +1,6 @@
 const refreshAccessToken = async () => {
   const refresh = localStorage.getItem("refresh");
   if (!refresh) {
-    console.error("No refresh token available");
     return;
   }
 

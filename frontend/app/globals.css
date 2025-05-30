@@ -12,17 +12,10 @@
   --font-mono: var(--font-geist-mono);
 }*/
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 @keyframes fade-in-up {
@@ -54,7 +47,7 @@ body {
 .animate-slide-in-right {
   animation: slide-in-right 1s ease-out;
 }
-main{
+main {
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
@@ -64,13 +57,15 @@ main{
     transform: scale(1);
     opacity: 0.6;
   }
-  75%, 100% {
+  75%,
+  100% {
     transform: scale(1.8);
     opacity: 0;
   }
 }
 @keyframes pulse-siri {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.8;
   }
@@ -80,7 +75,8 @@ main{
   }
 }
 @keyframes wave-siri {
-  0%, 100% {
+  0%,
+  100% {
     transform: scaleY(1);
   }
   50% {

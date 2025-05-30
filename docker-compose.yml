@@ -1,32 +1,48 @@
+version: '3.8'
+
 services:
   backend:
-    build: ./backend
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile.prod
     container_name: studroom-backend
-    ports:
-      - "8000:8000"
-    volumes:
-      - ./backend:/app
-      - /app/__pycache__
-      - /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock
-      - /var/run/mysqld:/var/run/mysqld
+    restart: unless-stopped
     env_file:
       - ./backend/.env
+    environment:
+      - DJANGO_SETTINGS_MODULE=backend.settings
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+      - ./backend/media:/app/media
+      - ./backend/static:/app/static
+      - /var/run/mysqld/mysqld.sock:/var/run/mysqld/mysqld.sock
+    ports:
+      - "80:80"
+      - "443:443"
     extra_hosts:
       - "mysql:127.0.0.1"
     networks:
       - studroom-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     container_name: studroom-frontend
-    ports:
-      - "3000:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-      - /app/.next
+    restart: unless-stopped
     env_file:
       - ./frontend/.env
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/public:/app/public
     depends_on:
       - backend
     networks:
@@ -37,4 +53,5 @@ networks:
     driver: bridge
 
 volumes:
-  mysql-data:
+  static_volume:
+  media_volume:

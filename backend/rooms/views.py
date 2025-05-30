@@ -15,6 +15,37 @@ from rest_framework import status
 from django.db.models import Q
 from rest_framework.permissions import AllowAny
 
+from django.core.mail import send_mail
+
+def perform_create(self, serializer):
+    chambre_id = self.request.data.get('chambre')
+    utilisateur = self.request.user
+
+    if Signalement.objects.filter(utilisateur=utilisateur, chambre=chambre_id).exists():
+        raise serializers.ValidationError("Vous avez déjà signalé cette chambre.")
+
+    instance = serializer.save(utilisateur=utilisateur)
+
+    # Envoi d'email automatique au bailleur
+    sujet = f"Alerte : signalement reçu pour {instance.chambre.titre}"
+    message = f"""
+Bonjour,
+
+Un étudiant a signalé votre chambre : {instance.chambre.titre}
+Motif : {instance.motif}
+Étudiant : {utilisateur.username} ({utilisateur.email})
+
+Merci de vérifier votre annonce.
+
+-- Roomia
+    """
+    destinataire = [instance.chambre.proprietaire.email]
+
+    send_mail(sujet, message, None, destinataire)
+
+    return instance
+
+
 
 class DashboardAnnonceurStats(APIView):
     permission_classes = [IsAuthenticated]

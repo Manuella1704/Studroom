@@ -47,5 +47,5 @@ class FavoriSerializer(serializers.ModelSerializer):
 class SignalementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Signalement
-        fields = '_all_'
+        fields = '__all__'
         read_only_fields = ['utilisateur', 'date_signalement']

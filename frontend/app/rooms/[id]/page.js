@@ -1,9 +1,13 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import Link from "next/link";
+import ReportForm from "../../components/ui/ReportForm";
+
 
 export default function RoomDetailPage() {
   const [room, setRoom] = useState(null);
+  const [showReportForm, setShowReportForm] = useState(false);
+
 
   useEffect(() => {
     setRoom({
@@ -107,15 +111,27 @@ export default function RoomDetailPage() {
           onClick={() => alert("Fonction de contact en développement...")}
           className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
         >
-          Contacter le bailleur
+          Contacter le publieur
         </button>
         <button
-          onClick={() => alert("Fonction de signalement en développement...")}
+          onClick={() => setShowReportForm(true)}
           className="w-full sm:w-auto bg-red-100 text-red-600 px-4 py-2 rounded hover:bg-red-200"
         >
           Signaler cette annonce
         </button>
+
+
       </div>
+
+
+    {/* ICI : en bas du return mais toujours à l’intérieur du parent */}
+    {showReportForm && (
+      <ReportForm
+        chambreId={room.id}
+        onClose={() => setShowReportForm(false)}
+      />
+    )}
     </div>
   );
+  
 }

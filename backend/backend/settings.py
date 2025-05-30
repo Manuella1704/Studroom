@@ -89,8 +89,14 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        "OPTIONS": {
-            "read_default_file": os.path.join(BASE_DIR, 'my.cnf')
+        'NAME': os.environ.get('DB_NAME', 'studroom_db'),
+        'USER': os.environ.get('DB_USER', 'phpmyadmin'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', 'pAPKt2DCPqmQ'),
+        'HOST': 'localhost',  # Utilisation de l'hôte Docker pour accéder au système hôte
+        'PORT': '3306',
+        'OPTIONS': {
+            'unix_socket': '/var/run/mysqld/mysqld.sock',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
     }
 }
